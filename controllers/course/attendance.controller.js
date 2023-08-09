@@ -35,34 +35,52 @@ const create_attendance = async (req, res) => {
 
 const markAttendance = async (req, res) => {
   const user = res.locals.user;
-  const attendanceId = req.params.attendanceId;
+  const barcodeId = req.params.barcodeId;
   const [attendance, attendanceErr] = await handlePromise(
-    Attendance.findById(attendanceId).populate("course")
+    Attendance.findOne({ uniqueId: barcodeId }).populate("course")
   );
   if (attendance) {
-    const haveAttended = attendance.attendees.map((attendee) => {
-      return attendee === user._id;
-    });
-    if (haveAttended[0]) {
-      reqError(
-        res,
-        null,
-        "You have marked attendance for this course previously"
-      );
-    } else {
-      const newAttendance = [...attendance.attendees, user._id];
-      const [updateAttendance, updateAttendanceErr] = await handlePromise(
-        Attendance.findByIdAndUpdate(
-          attendance._id,
-          { attendees: newAttendance },
-          { returnDocument: "after" }
-        )
-      );
-      if (updateAttendance) {
-        successReq(res, null, "Your attendance has been marked");
+    const [course, courseErr] = await handlePromise(
+      Course.findById(attendance.course)
+    );
+    if (course) {
+      const haveRegisteredForTheCourse = course.students.filter((student) => {
+        return student.toString() === user._id.toString();
+      });
+      if (haveRegisteredForTheCourse[0]) {
+        const haveAttended = attendance.attendees.filter((attendee) => {
+          return attendee.toString() === user._id.toString();
+        });
+        if (haveAttended[0]) {
+          reqError(
+            res,
+            null,
+            "You have already marked attendance for this course."
+          );
+        } else {
+          const newAttendance = [...attendance.attendees, user._id];
+          const [updateAttendance, updateAttendanceErr] = await handlePromise(
+            Attendance.findByIdAndUpdate(
+              attendance._id,
+              { attendees: newAttendance },
+              { returnDocument: "after" }
+            )
+          );
+          if (updateAttendance) {
+            successReq(res, null, "Your attendance has been marked");
+          } else {
+            serverError(res, null, "Could not update attendance");
+          }
+        }
       } else {
-        serverError(res, null, "Could not update attendance");
+        reqError(
+          res,
+          null,
+          "You must register for this course to mark attendance"
+        );
       }
+    } else {
+      serverError(res, null, "Could not fetch course");
     }
   } else {
     serverError(res, null, "Could not fetch attendance");

@@ -58,7 +58,6 @@ const create_course = async (req, res) => {
         Schedule.insertMany(suppliedSchedules)
       );
       if (savedSchedules) {
-        console.log("savedSchedules", savedSchedules);
         const scheduleIds = savedSchedules
           ? savedSchedules.map((schedule) => {
               return schedule._id;

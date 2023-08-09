@@ -67,13 +67,15 @@ app.get("/", (req, res) => {
 // general
 const authRoute = require("./routes/auth.routes");
 const courseRoute = require("./routes/course.routes");
+const attendanceRoute = require("./routes/attendance.routes");
 
 //general
 app.use("/", authRoute);
 app.use("/courses", courseRoute);
+app.use("/attendance", attendanceRoute);
 
-// app.use((req, res) => {
-//   res.status(404).json({ message: "not found", err: null, data: null });
-// });
+app.use((req, res) => {
+  res.status(404).json({ message: "not found", err: null, data: null });
+});
 
 module.exports = app;
