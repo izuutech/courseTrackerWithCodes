@@ -1,6 +1,9 @@
 const express = require("express");
 const courseController = require("../controllers/course/course.controller");
-const { requireLecturer } = require("../middleware/auth.middleware");
+const {
+  requireLecturer,
+  requireAuth,
+} = require("../middleware/auth.middleware");
 
 const courseRoute = express.Router();
 
@@ -97,7 +100,7 @@ courseRoute.post("/", requireLecturer, courseController.create_course);
  *          - courses
  *      responses:
  *          200:
- *              description: Course created successfully
+ *              description: Courses fetched successfully
  *          400:
  *              description: Bad request format
  *          401:
@@ -110,6 +113,37 @@ courseRoute.post("/", requireLecturer, courseController.create_course);
  *              description: An operation failed.
  */
 
-courseRoute.get("/", requireLecturer, courseController.fetch_all_courses);
+courseRoute.get("/", requireAuth, courseController.fetch_all_courses);
+
+/**
+ * @swagger
+ * /courses/{id}:
+ *  get:
+ *      summary: Fetch single course
+ *      tags:
+ *          - courses
+ *      parameters:
+ *          -   in: params
+ *              name: id
+ *              required: true
+ *              schema:
+ *                  type: string
+ *              description: id of the course
+ *      responses:
+ *          200:
+ *              description: Course fetched successfully
+ *          400:
+ *              description: Bad request format
+ *          401:
+ *              description: Authentication failed
+ *          403:
+ *              description: Forbidden error (most likely due to authentication mismatch)
+ *          404:
+ *              description: Not found
+ *          500:
+ *              description: An operation failed.
+ */
+
+courseRoute.get("/:id", requireAuth, courseController.fetch_single_courses);
 
 module.exports = courseRoute;

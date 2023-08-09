@@ -77,7 +77,7 @@ const fetch_all_courses = async (req, res) => {
     Course.find({}).populate("schedules", "lecturers").sort({ createdAt: -1 })
   );
   if (courses && courses[0]) {
-    successReq(res, null, "Courses fetched");
+    successReq(res, courses, "Courses fetched");
   } else if (courses) {
     successReq(res, null, "No course yet");
   } else {
@@ -85,4 +85,15 @@ const fetch_all_courses = async (req, res) => {
   }
 };
 
-module.exports = { create_course, fetch_all_courses };
+const fetch_single_courses = async (req, res) => {
+  const [course, courseErr] = await handlePromise(
+    Course.findById(req.params.id).populate("schedules", "lecturers")
+  );
+  if (course) {
+    successReq(res, course, "Course fetched");
+  } else {
+    reqError(res, courseErr, "Could not fetch course");
+  }
+};
+
+module.exports = { create_course, fetch_all_courses, fetch_single_courses };
