@@ -92,7 +92,14 @@ const fetch_single_courses = async (req, res) => {
   if (course) {
     successReq(res, course, "Course fetched");
   } else {
-    reqError(res, courseErr, "Could not fetch course");
+    const [courseByCode, courseByCodeErr] = await handlePromise(
+      Course.findOne({ courseCode: req.params.id })
+    );
+    if (courseByCode) {
+      successReq(res, courseByCode, "Course fetched");
+    } else {
+      reqError(res, courseByCodeErr || courseErr, "Could not fetch course");
+    }
   }
 };
 

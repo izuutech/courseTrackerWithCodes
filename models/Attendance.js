@@ -2,11 +2,12 @@ const mongoose = require("mongoose");
 
 const schema = mongoose.Schema;
 
-const courseSchema = schema(
+const attendanceSchema = schema(
   {
     uniqueId: {
-      type: schema.Types.ObjectId,
+      type: String,
       required: [true, "Please enter id to be encoded in barcorde"],
+      uniqueId: [true, "Unique id must be unique"],
     },
     course: {
       type: schema.Types.ObjectId,
@@ -18,7 +19,7 @@ const courseSchema = schema(
       ref: "User",
       required: [true, "Please enter the id of the lecturer"],
     },
-    attendies: [
+    attendees: [
       {
         type: schema.Types.ObjectId,
         ref: "User",
@@ -28,6 +29,6 @@ const courseSchema = schema(
   { timestamps: true }
 );
 
-const Course = mongoose.model("Course", courseSchema);
+const Attendance = mongoose.model("Attendance", attendanceSchema);
 
-module.exports = Course;
+module.exports = Attendance;

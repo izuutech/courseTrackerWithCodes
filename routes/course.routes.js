@@ -128,7 +128,7 @@ courseRoute.get("/", requireAuth, courseController.fetch_all_courses);
  *              required: true
  *              schema:
  *                  type: string
- *              description: id of the course
+ *              description: id of the course or course code
  *      responses:
  *          200:
  *              description: Course fetched successfully
