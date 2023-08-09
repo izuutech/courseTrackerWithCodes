@@ -73,7 +73,7 @@ const login_user = async (req, res) => {
           authError(
             res,
             userErr,
-            "You cannot login because you were suspended. Please contact support."
+            "You cannot login because you have not verified your email."
           );
         }
       } else {
