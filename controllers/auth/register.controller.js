@@ -130,7 +130,7 @@ const verify_user = async (req, res) => {
         reqError(res, null, "User could not be verified");
       }
     } else {
-      reqError(res, null, "Verification code does not match");
+      reqError(res, null, "Verification code is incorrect");
     }
   } else if (oldUser && oldUser.verified) {
     reqError(res, null, "Email already verified");
