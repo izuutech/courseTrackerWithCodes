@@ -39,6 +39,9 @@ const userSchema = schema(
       type: Boolean,
       required: [true, "Please provide verification status"],
     },
+    verificationCode: {
+      type: String,
+    },
     avatar: {
       type: String, //url
     },

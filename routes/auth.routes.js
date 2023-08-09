@@ -80,4 +80,36 @@ const authRoute = express.Router();
 authRoute.use(upload.single("avatar"));
 authRoute.post("/register", registerController.register_student);
 
+//route for registering user
+/**
+ * @swagger
+ * /register-verify/{id}:
+ *  get:
+ *      summary: Verify  user
+ *      tags:
+ *          - auth
+ *      parameters:
+ *          -   in: body
+ *              name: code
+ *              required: true
+ *              schema:
+ *                  type: string
+ *              description: The verification code
+ *      responses:
+ *          200:
+ *              description: User verified successfully
+ *          400:
+ *              description: Bad request format
+ *          401:
+ *              description: Authentication failed
+ *          403:
+ *              description: Forbidden error (most likely due to authentication mismatch)
+ *          404:
+ *              description: Not found
+ *          500:
+ *              description: An operation failed.
+ */
+
+authRoute.post("/register-verify", registerController.verify_user);
+
 module.exports = authRoute;
