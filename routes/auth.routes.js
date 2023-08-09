@@ -84,11 +84,17 @@ authRoute.post("/register", registerController.register_student);
 /**
  * @swagger
  * /register-verify/{id}:
- *  get:
+ *  post:
  *      summary: Verify  user
  *      tags:
  *          - auth
  *      parameters:
+ *          -   in: body
+ *              name: email
+ *              required: true
+ *              schema:
+ *                  type: string
+ *              description: The user email
  *          -   in: body
  *              name: code
  *              required: true
@@ -111,5 +117,36 @@ authRoute.post("/register", registerController.register_student);
  */
 
 authRoute.post("/register-verify", registerController.verify_user);
+
+/**
+ * @swagger
+ * /resend-verify-email/{id}:
+ *  post:
+ *      summary: To resend verification email
+ *      tags:
+ *          - auth
+ *      parameters:
+ *          -   in: body
+ *              name: email
+ *              required: true
+ *              schema:
+ *                  type: string
+ *              description: The user email
+ *      responses:
+ *          200:
+ *              description: User verified successfully
+ *          400:
+ *              description: Bad request format
+ *          401:
+ *              description: Authentication failed
+ *          403:
+ *              description: Forbidden error (most likely due to authentication mismatch)
+ *          404:
+ *              description: Not found
+ *          500:
+ *              description: An operation failed.
+ */
+
+authRoute.post("/resend-verify-email", registerController.resend_email);
 
 module.exports = authRoute;

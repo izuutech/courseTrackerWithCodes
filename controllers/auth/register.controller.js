@@ -48,47 +48,66 @@ const register_student = async (req, res) => {
       User.findOne({ email: incomingUser.email })
     );
     if (oldUser) {
-      // const [oldRegNo,oldRegNoErr]=await handlePromise(User.findOne({}))
       if (oldUser.verified === false) {
         const emailDetails = {
           verificationCode: code,
           from: "futofyp@gmail.com",
-          to: saved.email,
-          firstname: saved.firstname,
+          to: oldUser.email,
+          firstname: oldUser.firstname,
           subject: "Verify your email",
         };
         const sent = await gmailsendEmailConfirmation(emailDetails);
+        reqError(
+          res,
+          null,
+          "User already registered. Please check your email for verification code"
+        );
+      } else {
+        reqError(res, null, "User with that email already exists.");
       }
-
-      reqError(res, null, "User with that email already exists.");
     } else {
-      bcrypt.hash(incomingUser.password, 10, async (hashErr, hash) => {
-        if (!hashErr) {
-          const user = new User({ ...incomingUser, password: hash });
-          const [saved, savedErr] = await handlePromise(user.save());
-          console.log(JSON.stringify(savedErr));
-          if (saved) {
-            const emailDetails = {
-              verificationCode: code,
-              from: "futofyp@gmail.com",
-              to: saved.email,
-              firstname: saved.firstname,
-              subject: "Verify your email",
-            };
+      const [oldRegNo, oldRegNoErr] = await handlePromise(
+        User.findOne({ regNoOrCode: incomingUser.regNoOrCode })
+      );
+      if (oldRegNo) {
+        reqError(
+          res,
+          null,
+          `${
+            incomingUser.role === "lecturer"
+              ? "Lecturer code"
+              : "Registration number"
+          } already exists`
+        );
+      } else {
+        bcrypt.hash(incomingUser.password, 10, async (hashErr, hash) => {
+          if (!hashErr) {
+            const user = new User({ ...incomingUser, password: hash });
+            const [saved, savedErr] = await handlePromise(user.save());
+            console.log(JSON.stringify(savedErr));
+            if (saved) {
+              const emailDetails = {
+                verificationCode: code,
+                from: "futofyp@gmail.com",
+                to: saved.email,
+                firstname: saved.firstname,
+                subject: "Verify your email",
+              };
 
-            const sent = await gmailsendEmailConfirmation(emailDetails);
-            successReq(
-              res,
-              saved,
-              "Registration successful. Please verify your email"
-            );
+              const sent = await gmailsendEmailConfirmation(emailDetails);
+              successReq(
+                res,
+                saved,
+                "Registration successful. Please verify your email"
+              );
+            } else {
+              serverError(res, savedErr, "Could not register user");
+            }
           } else {
-            serverError(res, savedErr, "Could not register user");
+            serverError(res, hashErr, "Could not encrypt your password");
           }
-        } else {
-          serverError(res, hashErr, "Could not encrypt your password");
-        }
-      });
+        });
+      }
     }
   }
 };
@@ -121,7 +140,52 @@ const verify_user = async (req, res) => {
   }
 };
 
+const resend_email = async (req, res) => {
+  const body = req.body;
+  const random = Math.floor(Math.random() * 10000).toString();
+  const code =
+    random.length < 4
+      ? `${random}8`
+      : random.length > 4
+      ? random.substring(1)
+      : random;
+  const [oldUser, oldUserErr] = await handlePromise(
+    User.findOne({ email: body.email })
+  );
+  if (oldUser) {
+    const [updateUser, updateUserErr] = await handlePromise(
+      User.findByIdAndUpdate(
+        oldUser._id,
+        { verificationCode: code },
+        { returnDocument: "after" }
+      )
+    );
+    if (updateUser) {
+      const emailDetails = {
+        verificationCode: updateUser.verificationCode,
+        from: "futofyp@gmail.com",
+        to: oldUser.email,
+        firstname: oldUser.firstname,
+        subject: "Verify your email",
+      };
+
+      const sent = await gmailsendEmailConfirmation(emailDetails);
+
+      successReq(
+        res,
+        null,
+        "Email resent. Please check your spam or promotion folder if it is not in your inbox"
+      );
+    } else {
+      reqError(res, updateUserErr, "Could not resend email");
+    }
+  } else {
+    reqError(res, oldUserErr, "Email has not been registered");
+  }
+};
+
 module.exports = {
   register_student,
   verify_user,
+  resend_email,
 };
