@@ -30,7 +30,6 @@ const register_student = async (req, res) => {
     // avatar: file.avatar,
     role: body.role,
   };
-  console.log(incomingUser);
   const validateStatus = validateUser(incomingUser);
   if (validateStatus.error) {
     const theError = validateStatus.error.details[0];
