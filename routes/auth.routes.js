@@ -1,9 +1,48 @@
 const express = require("express");
 const multer = require("multer");
 const registerController = require("../controllers/auth/register.controller");
+const loginController = require("../controllers/auth/login.controller");
 const upload = multer({ dest: "./temp/uploads/" });
 
 const authRoute = express.Router();
+
+//route for registering user
+/**
+ * @swagger
+ * /login:
+ *  post:
+ *      summary: Login  user
+ *      tags:
+ *          - auth
+ *      parameters:
+ *          -   in: body
+ *              name: email
+ *              required: true
+ *              schema:
+ *                  type: string
+ *              description: This is the person's email
+ *          -   in: body
+ *              name: password
+ *              required: true
+ *              schema:
+ *                  type: string
+ *              description: This is the person's password
+ *      responses:
+ *          200:
+ *              description: User logged in successfully
+ *          400:
+ *              description: Bad request format
+ *          401:
+ *              description: Authentication failed
+ *          403:
+ *              description: Forbidden error (most likely due to authentication mismatch)
+ *          404:
+ *              description: Not found
+ *          500:
+ *              description: An operation failed.
+ */
+
+authRoute.post("/login", loginController.login_user);
 
 //route for registering user
 /**

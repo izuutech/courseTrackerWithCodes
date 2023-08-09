@@ -1,7 +1,14 @@
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const { User } = require("../../models/User");
 const handlePromise = require("../../utils/handlePromise.utils");
 const { reqError, authError } = require("../../utils/responses.utils");
+
+const createToken = async (id) => {
+  return jwt.sign({ id: id }, process.env.JWT_KEY, {
+    expiresIn: "3h",
+  });
+};
 
 const login_user = async (req, res) => {
   const body = req.body;
@@ -15,7 +22,7 @@ const login_user = async (req, res) => {
         const token = await createToken(user._id);
         const maxAge = 3 * 60 * 60; //3hrs
         if (user.verified === true) {
-          if (user.role === "user") {
+          if (user.role === "student") {
             res
               .status(200)
               .cookie("jwt", token, {
@@ -23,7 +30,7 @@ const login_user = async (req, res) => {
                 maxAge: maxAge * 1000,
               })
               .json({
-                message: "User logged in",
+                message: "Student logged in",
                 error: null,
                 data: {
                   role: user.role,
@@ -36,7 +43,7 @@ const login_user = async (req, res) => {
                   _id: user._id,
                 },
               });
-          } else if (user.role === "admin") {
+          } else if (user.role === "lecturer") {
             res
               .status(200)
               .cookie("admintoken", token, {
@@ -48,7 +55,7 @@ const login_user = async (req, res) => {
                 maxAge: maxAge * 1000,
               })
               .json({
-                message: "Admin logged in",
+                message: "Lecturer logged in",
                 error: null,
                 data: {
                   role: user.role,
