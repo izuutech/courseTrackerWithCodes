@@ -1,7 +1,11 @@
 const { Course, validateCourse } = require("../../models/Course");
 const { validateSchedule, Schedule } = require("../../models/Schedules");
 const handlePromise = require("../../utils/handlePromise.utils");
-const { reqError, createSuccess } = require("../../utils/responses.utils");
+const {
+  reqError,
+  createSuccess,
+  successReq,
+} = require("../../utils/responses.utils");
 
 const save_course = async (req, res, scheduleIds) => {
   const body = req.body;
@@ -68,4 +72,17 @@ const create_course = async (req, res) => {
   }
 };
 
-module.exports = { create_course };
+const fetch_all_courses = async (req, res) => {
+  const [courses, coursesErr] = await handlePromise(
+    Course.find({}).populate("schedules", "lecturers").sort({ createdAt: -1 })
+  );
+  if (courses && courses[0]) {
+    successReq(res, null, "Courses fetched");
+  } else if (courses) {
+    successReq(res, null, "No course yet");
+  } else {
+    reqError(res, coursesErr, "Could not fetch courses");
+  }
+};
+
+module.exports = { create_course, fetch_all_courses };

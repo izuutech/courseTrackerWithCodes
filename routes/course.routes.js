@@ -6,7 +6,7 @@ const courseRoute = express.Router();
 
 /**
  * @swagger
- * /course:
+ * /courses:
  *  post:
  *      summary: Create course
  *      tags:
@@ -52,8 +52,25 @@ const courseRoute = express.Router();
  *              name: schedules
  *              required: false
  *              schema:
- *                  type: string
- *              description: This is the schedules of the course it should be an array of objects. The objects should have startTime and endTime eg [{startTime:2023-08-09T17:45:41.251+0000,endTime:2023-08-09T17:45:41.251+0000}]
+ *                  type: object
+ *                  properties:
+ *                      day:
+ *                          type: string
+ *                      startHour:
+ *                          type: integer
+ *                      startMinute:
+ *                          type: integer
+ *                      endHour:
+ *                          type: integer
+ *                      endMinute:
+ *                          type: integer
+ *                  example:
+ *                      day: Monday
+ *                      startHour: 12
+ *                      startMinute: 45
+ *                      endHour: 8
+ *                      endMinute: 23
+ *              description: This is the schedules of the course it should be an array of objects. The objects should have day,startHour,startMinute,endHour and endMinute
  *      responses:
  *          200:
  *              description: Course created successfully
@@ -70,5 +87,29 @@ const courseRoute = express.Router();
  */
 
 courseRoute.post("/", requireLecturer, courseController.create_course);
+
+/**
+ * @swagger
+ * /courses:
+ *  get:
+ *      summary: Fetch all courses
+ *      tags:
+ *          - courses
+ *      responses:
+ *          200:
+ *              description: Course created successfully
+ *          400:
+ *              description: Bad request format
+ *          401:
+ *              description: Authentication failed
+ *          403:
+ *              description: Forbidden error (most likely due to authentication mismatch)
+ *          404:
+ *              description: Not found
+ *          500:
+ *              description: An operation failed.
+ */
+
+courseRoute.get("/", requireLecturer, courseController.fetch_all_courses);
 
 module.exports = courseRoute;

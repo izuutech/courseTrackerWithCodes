@@ -70,7 +70,7 @@ const courseRoute = require("./routes/course.routes");
 
 //general
 app.use("/", authRoute);
-app.use("/course", courseRoute);
+app.use("/courses", courseRoute);
 
 // app.use((req, res) => {
 //   res.status(404).json({ message: "not found", err: null, data: null });
