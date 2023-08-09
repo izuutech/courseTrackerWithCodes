@@ -3,6 +3,7 @@ const courseController = require("../controllers/course/course.controller");
 const {
   requireLecturer,
   requireAuth,
+  requireStudent,
 } = require("../middleware/auth.middleware");
 
 const courseRoute = express.Router();
@@ -114,6 +115,76 @@ courseRoute.post("/", requireLecturer, courseController.create_course);
  */
 
 courseRoute.get("/", requireAuth, courseController.fetch_all_courses);
+
+/**
+ * @swagger
+ * /courses/toggle/lecturer/{id}:
+ *  put:
+ *      summary: Add or remove courses to a lecturer's course
+ *      tags:
+ *          - lecturer
+ *      parameters:
+ *          -   in: params
+ *              name: id
+ *              required: true
+ *              schema:
+ *                  type: string
+ *              description: id of the course
+ *      responses:
+ *          200:
+ *              description: Course added or removed successfully
+ *          400:
+ *              description: Bad request format
+ *          401:
+ *              description: Authentication failed
+ *          403:
+ *              description: Forbidden error (most likely due to authentication mismatch)
+ *          404:
+ *              description: Not found
+ *          500:
+ *              description: An operation failed.
+ */
+
+courseRoute.put(
+  "/toggle/lecturer/:id",
+  requireLecturer,
+  courseController.toggele_add_course_to_courses_for_lecturers
+);
+
+/**
+ * @swagger
+ * /courses/toggle/student/{id}:
+ *  put:
+ *      summary: Add or remove courses to a student's course
+ *      tags:
+ *          - lecturer
+ *      parameters:
+ *          -   in: params
+ *              name: id
+ *              required: true
+ *              schema:
+ *                  type: string
+ *              description: id of the course
+ *      responses:
+ *          200:
+ *              description: Course added or removed successfully
+ *          400:
+ *              description: Bad request format
+ *          401:
+ *              description: Authentication failed
+ *          403:
+ *              description: Forbidden error (most likely due to authentication mismatch)
+ *          404:
+ *              description: Not found
+ *          500:
+ *              description: An operation failed.
+ */
+
+courseRoute.put(
+  "/toggle/student/:id",
+  requireStudent,
+  courseController.toggele_add_course_to_courses_for_student
+);
 
 /**
  * @swagger

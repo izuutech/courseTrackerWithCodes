@@ -33,9 +33,16 @@ const courseSchema = schema(
       {
         type: schema.Types.ObjectId,
         required: [true, "Please enter the schedules of the class"],
+        ref: "Schedule",
       },
     ],
     lecturers: [
+      {
+        type: schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    students: [
       {
         type: schema.Types.ObjectId,
         ref: "User",
@@ -55,6 +62,7 @@ const validateCourse = (course) => {
     venue: Joi.string().required().label("Venue"),
     schedules: Joi.array().label("Schedules"),
     lecturers: Joi.array().label("Lecturers"),
+    students: Joi.array().label("Students"),
   });
 
   return schema.validate(course);

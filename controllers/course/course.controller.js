@@ -5,9 +5,10 @@ const {
   reqError,
   createSuccess,
   successReq,
+  serverError,
 } = require("../../utils/responses.utils");
 
-const save_course = async (req, res, scheduleIds) => {
+const save_created_course = async (req, res, scheduleIds) => {
   const body = req.body;
   const lecturer = res.locals.user;
   const data = {
@@ -19,6 +20,7 @@ const save_course = async (req, res, scheduleIds) => {
     venue: body.venue,
     schedules: scheduleIds || [],
     lecturers: [lecturer._id],
+    students: [],
   };
 
   const validateStatus = validateCourse(data);
@@ -62,19 +64,23 @@ const create_course = async (req, res) => {
               return schedule._id;
             })
           : [];
-        save_course(req, res, scheduleIds);
+        save_created_course(req, res, scheduleIds);
       } else {
         reqError(res, savedSchedulesErr, "Could not save schedules");
       }
     }
   } else {
-    save_course(req, res);
+    save_created_course(req, res);
   }
 };
 
 const fetch_all_courses = async (req, res) => {
   const [courses, coursesErr] = await handlePromise(
-    Course.find({}).populate("schedules", "lecturers").sort({ createdAt: -1 })
+    Course.find({})
+      .populate("schedules")
+      .populate("lecturers")
+      .populate("students")
+      .sort({ createdAt: -1 })
   );
   if (courses && courses[0]) {
     successReq(res, courses, "Courses fetched");
@@ -87,7 +93,10 @@ const fetch_all_courses = async (req, res) => {
 
 const fetch_single_courses = async (req, res) => {
   const [course, courseErr] = await handlePromise(
-    Course.findById(req.params.id).populate("schedules", "lecturers")
+    Course.findById(req.params.id)
+      .populate("schedules")
+      .populate("lecturers")
+      .populate("students")
   );
   if (course) {
     successReq(res, course, "Course fetched");
@@ -98,9 +107,103 @@ const fetch_single_courses = async (req, res) => {
     if (courseByCode) {
       successReq(res, courseByCode, "Course fetched");
     } else {
-      reqError(res, courseByCodeErr || courseErr, "Could not fetch course");
+      serverError(res, courseByCodeErr || courseErr, "Could not fetch course");
     }
   }
 };
 
-module.exports = { create_course, fetch_all_courses, fetch_single_courses };
+const save_student_courses = async (res, course, newStudents, operation) => {
+  const [add, addErr] = await handlePromise(
+    Course.findByIdAndUpdate(
+      course._id,
+      { students: newStudents },
+      { returnDocument: "after" }
+    )
+  );
+  if (add) {
+    successReq(
+      res,
+      null,
+      `Successfully ${operation === "add" ? "added" : "removed"} ${
+        course.title
+      } ${operation === "add" ? "to" : "from"} your list of courses`
+    );
+  } else {
+    serverError(res, addErr, "Could not save to the list of your courses");
+  }
+};
+
+const toggele_add_course_to_courses_for_student = async (req, res) => {
+  const user = res.locals.user;
+  const [course, courseErr] = await handlePromise(
+    Course.findById(req.params.id)
+  );
+  if (course) {
+    const haveAdded = course.students.filter((student) => {
+      return student.toString() === user._id.toString();
+    });
+    if (haveAdded && haveAdded[0]) {
+      const newStudents = course.students.filter((student) => {
+        return student.toString() !== user._id.toString();
+      });
+      save_student_courses(res, course, newStudents, "remove");
+    } else {
+      const newStudents = [...course.students, user._id];
+      save_student_courses(res, course, newStudents, "add");
+    }
+  } else {
+    serverError(res, courseErr, "Could not fetch course");
+  }
+};
+
+const save_lecturer_courses = async (res, course, newLecturers, operation) => {
+  const [add, addErr] = await handlePromise(
+    Course.findByIdAndUpdate(
+      course._id,
+      { lecturers: newLecturers },
+      { returnDocument: "after" }
+    )
+  );
+  if (add) {
+    successReq(
+      res,
+      null,
+      `Successfully ${operation === "add" ? "added" : "removed"} ${
+        course.title
+      } ${operation === "add" ? "to" : "from"} your list of courses`
+    );
+  } else {
+    serverError(res, addErr, "Could not save to the list of your courses");
+  }
+};
+
+const toggele_add_course_to_courses_for_lecturers = async (req, res) => {
+  const user = res.locals.user;
+  const [course, courseErr] = await handlePromise(
+    Course.findById(req.params.id)
+  );
+  if (course) {
+    const haveAdded = course.lecturers.filter((lecturer) => {
+      return lecturer.toString() === user._id.toString();
+    });
+    if (haveAdded && haveAdded[0]) {
+      const newLecturers = course.lecturers.filter((lecturer) => {
+        return lecturer.toString() !== user._id.toString();
+      });
+      save_lecturer_courses(res, course, newLecturers, "remove");
+    } else {
+      const newLecturers = [...course.lecturers, user._id];
+      save_lecturer_courses(res, course, newLecturers, "add");
+    }
+  } else {
+    serverError(res, courseErr, "Could not fetch course");
+  }
+};
+
+module.exports = {
+  create_course,
+  fetch_all_courses,
+  fetch_single_courses,
+  toggele_add_course_to_courses_for_student,
+  toggele_add_course_to_courses_for_lecturers,
+};
