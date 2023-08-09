@@ -6,6 +6,7 @@ const {
   serverError,
   successReq,
 } = require("../../utils/responses.utils");
+const { gmailsendEmailConfirmation } = require("./email.controller");
 
 const register_student = async (req, res) => {
   const body = req.body;
@@ -29,6 +30,7 @@ const register_student = async (req, res) => {
     // avatar: file.avatar,
     role: body.role,
   };
+  console.log(incomingUser);
   const validateStatus = validateUser(incomingUser);
   if (validateStatus.error) {
     const theError = validateStatus.error.details[0];
@@ -46,6 +48,7 @@ const register_student = async (req, res) => {
       User.findOne({ email: incomingUser.email })
     );
     if (oldUser) {
+      // const [oldRegNo,oldRegNoErr]=await handlePromise(User.findOne({}))
       if (oldUser.verified === false) {
         const emailDetails = {
           verificationCode: code,
@@ -63,6 +66,7 @@ const register_student = async (req, res) => {
         if (!hashErr) {
           const user = new User({ ...incomingUser, password: hash });
           const [saved, savedErr] = await handlePromise(user.save());
+          console.log(JSON.stringify(savedErr));
           if (saved) {
             const emailDetails = {
               verificationCode: code,

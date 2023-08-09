@@ -64,6 +64,7 @@ const validateUser = (person) => {
     role: Joi.string().valid("student", "lecturer").required().label("Role"),
     avatar: Joi.string().label("Avatar"),
     verified: Joi.boolean().label("Verification status"),
+    verificationCode: Joi.string().label("Verification code"),
     password: Joi.string().min(8).required().label("Password"),
   });
 

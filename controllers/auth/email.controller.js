@@ -1,13 +1,12 @@
 const nodemailer = require("nodemailer");
 const { google } = require("googleapis");
-const { handlePromise } = require("../utils/handlePromise");
 
 const clientId =
-  "204831986533-qvnfocj7qc9ndmpcgghi1o8vakcvsi3u.apps.googleusercontent.com";
-const clientSecret = "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";
+  "1007442053559-d3a0epp0lr38onmkauo27umq5o71cb0o.apps.googleusercontent.com";
+const clientSecret = "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";
 const redirect_uri = "https://developers.google.com/oauthplayground";
 const refreshToken =
-  "1//04I8Gx-xHSmm6CgYIARAAGAQSNwF-L9IrQHGmNh8dSDjr4A6b2v6X4CnNmSrFoi4R8peP56aYdhfIE6AJyjnqMSQc051APYqcAZ0";
+  "1//04tO2-xblhu2_CgYIARAAGAQSNwF-L9IreU3iP8_PY1hh-v6QXDquLRIdeIz98J6A1ZZ762mfYkLRwOPU8zy52Cv1wMAoGMtsUDQ";
 
 const oAuth2Client = new google.auth.OAuth2(
   clientId,
@@ -34,7 +33,7 @@ const gmailsendEmailConfirmation = async (values) => {
     const verificationCode = values.verificationCode;
     const subject = values.subject;
     const mailOptions = {
-      from: "Account Management <futofyp@gmail.com>",
+      from: "Attendance Management <futofyp@gmail.com>",
       to: values.to,
       subject: values.subject,
       text: `Your verification code is ${verificationCode}`,
@@ -86,7 +85,7 @@ const gmailsendEmailConfirmation = async (values) => {
       <!-- Body content -->
       <tr>
       <td class="content-cell" style="box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; position: relative; max-width: 100vw; padding: 32px;">
-      <a href="https://ibb.co/ggPZG5W"><img src="https://i.ibb.co/JkyjNfp/09818-1.png" alt="logo" border="0" style="height: 50px; aspect-ratio:auto; margin-top:20px; margin-bottom:20px"></a>
+      
   
       <h1 style="box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; position: relative; color: #3d4852; font-size: 18px; font-weight: bold; margin-top: 0; text-align: left;">${subject}</h1>
       <p style="box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; position: relative; font-size: 16px; line-height: 1.5em; margin-top: 0; text-align: left;">Thank you for signing up with Our Project. To complete your registration, we need to confirm your email address, so we know you are reachable at this address.</p>
@@ -204,8 +203,7 @@ const gmailsendResetEmail = async (values) => {
       <tr>
       <td class="content-cell" style="box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; position: relative; max-width: 100vw; padding: 32px;">
     
-      <a href="https://ibb.co/ggPZG5W"><img src="https://i.ibb.co/JkyjNfp/09818-1.png" alt="logo" border="0" style="height: 50px; aspect-ratio:auto; margin-top:20px; margin-bottom:20px"></a>
-  
+      
       <h1 style="box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; position: relative; color: #3d4852; font-size: 18px; font-weight: bold; margin-top: 0; text-align: left;">${subject}</h1>
       
       <p style="box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; position: relative; font-size: 16px; line-height: 1.5em; margin-top: 0; text-align: left;">To reset your passsword, please use the code below.</p>
