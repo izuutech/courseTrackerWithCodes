@@ -9,7 +9,7 @@ const cors = require("cors");
 
 //swagger
 const swaggerUi = require("swagger-ui-express");
-const swaggerDocs = require("../swaggerConfig");
+const swaggerDocs = require("./swaggerConfig");
 
 const MONGO_URI = process.env.MONGO_URI;
 // const MONGO_URI = process.env.LOCAL_MONGO_URI;
@@ -36,8 +36,9 @@ app.use(
   })
 );
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+//parse json
 app.use(bodyParser.json());
 
 app.use(
@@ -63,10 +64,10 @@ app.get("/", (req, res) => {
   res.status(200).json({ message: "hello", err: null, data: null });
 });
 
-//general
-// const authRoute = require("../routes/auth.routes");
+// general
+const authRoute = require("./routes/auth.routes");
 
 //general
-// app.use("/", authRoute);
+app.use("/", authRoute);
 
 module.exports = app;

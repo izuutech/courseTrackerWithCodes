@@ -1,7 +1,9 @@
 const express = require("express");
+const multer = require("multer");
 const registerController = require("../controllers/register.controller");
+const upload = multer({ dest: "./temp/uploads/" });
 
-const registerRoute = express.Router();
+const authRoute = express.Router();
 
 //route for registering user
 /**
@@ -12,6 +14,12 @@ const registerRoute = express.Router();
  *      tags:
  *          - auth
  *      parameters:
+ *          -   in: body
+ *              name: regNoOrCode
+ *              required: true
+ *              schema:
+ *                  type: string
+ *              description: For a lecturer, this is the lecturer code, for a student, this is the reg number
  *          -   in: body
  *              name: email
  *              required: true
@@ -37,11 +45,23 @@ const registerRoute = express.Router();
  *                  type: string
  *              description: This is the person's password
  *          -   in: body
- *              name: phoneNumber
+ *              name: department
  *              required: true
  *              schema:
  *                  type: string
- *              description: This is the user's phone number
+ *              description: This is the user's department
+ *          -   in: body
+ *              name: role
+ *              required: true
+ *              schema:
+ *                  type: string
+ *              description: This should be either "lecturer" or "student"
+ *          -   in: body
+ *              name: avatar
+ *              required: false
+ *              schema:
+ *                  type: string
+ *              description: This is the avatar of the user
  *      responses:
  *          200:
  *              description: User registered successfully
@@ -56,6 +76,8 @@ const registerRoute = express.Router();
  *          500:
  *              description: An operation failed.
  */
-registerRoute.post("/register", registerController.register_student);
 
-module.exports = registerRoute;
+authRoute.use(upload.single("avatar"));
+authRoute.post("/register", registerController.register_student);
+
+module.exports = authRoute;
