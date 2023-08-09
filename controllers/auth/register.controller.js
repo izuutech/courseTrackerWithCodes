@@ -1,11 +1,11 @@
 const bcrypt = require("bcrypt");
-const { validateUser, User } = require("../models/User");
-const handlePromise = require("../utils/handlePromise.utils");
+const { validateUser, User } = require("../../models/User");
+const handlePromise = require("../../utils/handlePromise.utils");
 const {
   reqError,
   serverError,
   successReq,
-} = require("../utils/responses.utils");
+} = require("../../utils/responses.utils");
 
 const register_student = async (req, res) => {
   const body = req.body;

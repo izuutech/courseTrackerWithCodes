@@ -1,6 +1,6 @@
 const express = require("express");
 const multer = require("multer");
-const registerController = require("../controllers/register.controller");
+const registerController = require("../controllers/auth/register.controller");
 const upload = multer({ dest: "./temp/uploads/" });
 
 const authRoute = express.Router();
