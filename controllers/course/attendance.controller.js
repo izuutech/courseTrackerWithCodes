@@ -10,29 +10,6 @@ const {
 } = require("../../utils/responses.utils");
 const Attendance = require("../../models/Attendance");
 
-const create_attendance = async (req, res) => {
-  const lecturer = res.locals.user;
-  const courseId = req.params.courseId;
-  const uniqueId = uuid.v4();
-  const [course, courseErr] = await handlePromise(Course.findById(courseId));
-  if (course) {
-    const incoming = {
-      uniqueId,
-      course: course._id,
-      lecturer: lecturer._id,
-    };
-    const attendance = new Attendance(incoming);
-    const [saved, savedErr] = await handlePromise(attendance.save());
-    if (saved) {
-      createSuccess(res, { barcodeId: saved.uniqueId }, "Attendance generated");
-    } else {
-      serverError(res, null, "Could not save attendance");
-    }
-  } else {
-    serverError(res, courseErr, "Could not fetch the course");
-  }
-};
-
 const markAttendance = async (req, res) => {
   const user = res.locals.user;
   const barcodeId = req.params.barcodeId;
@@ -87,4 +64,47 @@ const markAttendance = async (req, res) => {
   }
 };
 
-module.exports = { create_attendance, markAttendance };
+const create_attendance = async (req, res) => {
+  const lecturer = res.locals.user;
+  const courseId = req.params.courseId;
+  const uniqueId = uuid.v4();
+  const [course, courseErr] = await handlePromise(Course.findById(courseId));
+  if (course) {
+    const incoming = {
+      uniqueId,
+      course: course._id,
+      lecturer: lecturer._id,
+    };
+    const attendance = new Attendance(incoming);
+    const [saved, savedErr] = await handlePromise(attendance.save());
+    if (saved) {
+      createSuccess(res, { barcodeId: saved.uniqueId }, "Attendance generated");
+    } else {
+      serverError(res, null, "Could not save attendance");
+    }
+  } else {
+    serverError(res, courseErr, "Could not fetch the course");
+  }
+};
+
+const fetch_all_attendance_for_single_course = async (req, res) => {
+  const courseId = req.params.courseId;
+  const [attendances, attendancesErr] = await handlePromise(
+    Attendance.find({ course: courseId }).populate("course")
+  );
+  if (attendances) {
+    successReq(res, attendances, "All attendance fetched");
+  } else {
+    serverError(
+      res,
+      attendancesErr,
+      "Could not fetch all attendance lsit for this course"
+    );
+  }
+};
+
+module.exports = {
+  markAttendance,
+  create_attendance,
+  fetch_all_attendance_for_single_course,
+};
