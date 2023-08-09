@@ -35,6 +35,10 @@ const userSchema = schema(
       type: String,
       required: [true, "Please enter user role"],
     },
+    verified: {
+      type: Boolean,
+      required: [true, "Please provide verification status"],
+    },
     avatar: {
       type: String, //url
     },
@@ -56,6 +60,7 @@ const validateUser = (person) => {
     department: Joi.string().required().label("Department"),
     role: Joi.string().valid("student", "lecturer").required().label("Role"),
     avatar: Joi.string().label("Avatar"),
+    verified: Joi.boolean().label("Verification status"),
     password: Joi.string().min(8).required().label("Password"),
   });
 

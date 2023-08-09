@@ -17,6 +17,7 @@ const register_student = async (req, res) => {
     lastName: body.lastName?.trim(),
     password: body.password?.trim(),
     department: body.department?.trim(),
+    verified: false,
     // avatar: file.avatar,
     role: body.role,
   };
