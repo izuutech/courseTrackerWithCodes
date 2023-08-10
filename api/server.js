@@ -23,7 +23,9 @@ mongoose
   })
   .then((result) => {
     console.log("MongoDB connected");
-    app.listen(PORT, () => console.log(`server running on ${PORT}`));
+    if (process.env.STAGE === "development") {
+      app.listen(PORT, () => console.log(`server running on ${PORT}`));
+    }
   })
   .catch((err) => console.log(err));
 
@@ -40,7 +42,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 //parse json
 app.use(bodyParser.json());
-
 app.use(
   "/api-docs",
   // process.env.STAGE === "development"

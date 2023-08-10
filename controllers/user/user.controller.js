@@ -83,7 +83,7 @@ const change_user_details = async (res, user, body, result) => {
 const modify_user = (async = async (req, res) => {
   const body = req.body;
   const user = res.locals.user;
-
+  console.log(body, "boddddd");
   if (req.file) {
     cloudinary.v2.uploader.upload(
       req.file.path,
