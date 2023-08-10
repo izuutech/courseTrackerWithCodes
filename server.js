@@ -50,6 +50,8 @@ app.use(
   swaggerUi.setup(swaggerDocs)
 );
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
 //route to read a notification
 /**
  * @swagger
