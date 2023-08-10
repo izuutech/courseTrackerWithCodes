@@ -15,6 +15,25 @@ cloudinary.config({
   api_secret: "Q-wYSL5K2j0J3bLWGMgU5mTzTuE",
 });
 
+const create_user = async (res, theUser, code) => {
+  const user = new User(theUser);
+  const [saved, savedErr] = await handlePromise(user.save());
+  if (saved) {
+    const emailDetails = {
+      verificationCode: code,
+      from: "futofyp@gmail.com",
+      to: saved.email,
+      firstname: saved.firstname,
+      subject: "Verify your email",
+    };
+
+    const sent = await gmailsendEmailConfirmation(emailDetails);
+    successReq(res, saved, "Registration successful. Please verify your email");
+  } else {
+    serverError(res, savedErr, "Could not register user");
+  }
+};
+
 const register_student = async (req, res) => {
   const body = req.body;
   const file = req.file;
@@ -89,41 +108,30 @@ const register_student = async (req, res) => {
       } else {
         bcrypt.hash(incomingUser.password, 10, async (hashErr, hash) => {
           if (!hashErr) {
-            cloudinary.v2.uploader.upload(
-              req.file.path,
-              { public_id: req.file.originalname },
-              async function (error, result) {
-                if (error) {
-                  serverError(res, null, "Image not uploaded");
-                } else {
-                  const user = new User({
-                    ...incomingUser,
-                    password: hash,
-                    avatar: result.secure_url,
-                  });
-                  const [saved, savedErr] = await handlePromise(user.save());
-                  console.log(JSON.stringify(savedErr));
-                  if (saved) {
-                    const emailDetails = {
-                      verificationCode: code,
-                      from: "futofyp@gmail.com",
-                      to: saved.email,
-                      firstname: saved.firstname,
-                      subject: "Verify your email",
-                    };
-
-                    const sent = await gmailsendEmailConfirmation(emailDetails);
-                    successReq(
-                      res,
-                      saved,
-                      "Registration successful. Please verify your email"
-                    );
+            if (req.file && req.file.path) {
+              cloudinary.v2.uploader.upload(
+                req.file.path,
+                { public_id: req.file.originalname },
+                async function (error, result) {
+                  if (error) {
+                    serverError(res, null, "Could not upload image");
                   } else {
-                    serverError(res, savedErr, "Could not register user");
+                    const theUser = {
+                      ...incomingUser,
+                      password: hash,
+                      avatar: result.secure_url,
+                    };
+                    create_user(res, theUser, code);
                   }
                 }
-              }
-            );
+              );
+            } else {
+              const theUser = {
+                ...incomingUser,
+                password: hash,
+              };
+              create_user(res, theUser, code);
+            }
           } else {
             serverError(res, hashErr, "Could not encrypt your password");
           }

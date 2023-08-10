@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const cloudinary = require("cloudinary");
 const { User } = require("../../models/User");
 const handlePromise = require("../../utils/handlePromise.utils");
 const {
@@ -54,15 +55,18 @@ const change_password = async (req, res) => {
   }
 };
 
-const modify_user = (async = async (req, res) => {
-  const body = req.body;
-  const user = res.locals.user;
-  const avatar = req?.file?.avatar;
+cloudinary.config({
+  cloud_name: "dyx2e9ox4",
+  api_key: "348882827666355",
+  api_secret: "Q-wYSL5K2j0J3bLWGMgU5mTzTuE",
+});
+
+const change_user_details = async (res, user, body, result) => {
   const [updateUser, updateUserErr] = await handlePromise(
     User.findByIdAndUpdate(
       user._id,
       {
-        avatar: user.password,
+        avatar: result ? result.secure_url : undefined,
         firstName: body.firstName || user.firstName,
         lastName: body.lastName || user.lastName,
       },
@@ -73,6 +77,27 @@ const modify_user = (async = async (req, res) => {
     successReq(res, null, "Profile updated successfully");
   } else {
     serverError(res, updateUserErr, "Could not update your data");
+  }
+};
+
+const modify_user = (async = async (req, res) => {
+  const body = req.body;
+  const user = res.locals.user;
+
+  if (req.file) {
+    cloudinary.v2.uploader.upload(
+      req.file.path,
+      { public_id: req.file.originalname },
+      async function (error, result) {
+        if (error) {
+          serverError(res, null, "Image not uploaded");
+        } else {
+          change_user_details(res, user, body, result);
+        }
+      }
+    );
+  } else {
+    change_user_details(res, user, body);
   }
 });
 
