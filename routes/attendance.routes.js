@@ -86,6 +86,42 @@ attendanceRoute.put(
 
 /**
  * @swagger
+ * /attendance/single/{attendanceId}:
+ *  get:
+ *      summary: Fetch a single attendance
+ *      description : To get the total number of students registered, simply do attendance.course.students
+ *      tags:
+ *          - attendance
+ *      parameters:
+ *          -   in: params
+ *              name: attendanceId
+ *              required: true
+ *              schema:
+ *                  type: string
+ *              description: id of the attendance
+ *      responses:
+ *          200:
+ *              description: Attendance fetched successfully
+ *          400:
+ *              description: Bad request format
+ *          401:
+ *              description: Authentication failed
+ *          403:
+ *              description: Forbidden error (most likely due to authentication mismatch)
+ *          404:
+ *              description: Not found
+ *          500:
+ *              description: An operation failed.
+ */
+
+attendanceRoute.get(
+  "/:attendanceId",
+  requireLecturer,
+  attendanceController.fetch_single_attendance
+);
+
+/**
+ * @swagger
  * /attendance/{courseId}:
  *  get:
  *      summary: Fetch all attendance for a course

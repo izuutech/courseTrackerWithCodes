@@ -16,6 +16,7 @@ const swaggerOptions = {
     "./routes/auth.routes.js",
     "./routes/course.routes.js",
     "./routes/attendance.routes.js",
+    "./routes/user.routes.js",
   ],
 };
 

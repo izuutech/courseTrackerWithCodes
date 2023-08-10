@@ -139,7 +139,26 @@ const fetch_all_attendance_for_single_course = async (req, res) => {
     serverError(
       res,
       attendancesErr,
-      "Could not fetch all attendance lsit for this course"
+      "Could not fetch all attendance list for this course"
+    );
+  }
+};
+
+const fetch_single_attendance = async (req, res) => {
+  const attendanceId = req.params.attendanceId;
+  const [attendance, attendanceErr] = await handlePromise(
+    Attendance.findById(attendanceId)
+      .populate("course")
+      .populate("attendees")
+      .populate("schedule")
+  );
+  if (attendance) {
+    successReq(res, attendance, "Attendance fetched");
+  } else {
+    serverError(
+      res,
+      attendanceErr,
+      "Could not fetch attendance list for this course"
     );
   }
 };
@@ -199,5 +218,6 @@ module.exports = {
   markAttendance,
   create_attendance,
   fetch_all_attendance_for_single_course,
+  fetch_single_attendance,
   add_student_to_attendance,
 };
