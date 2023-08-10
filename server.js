@@ -42,13 +42,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 //parse json
 app.use(bodyParser.json());
-app.use(
-  "/api-docs",
-  // process.env.STAGE === "development"
-  //   ? swaggerUi.serve
-  //   : (req, res) => successReq(res, null, "hi"),
-  swaggerUi.setup(swaggerDocs)
-);
+// app.use(
+//   "/api-docs",
+//   // process.env.STAGE === "development"
+//   //   ? swaggerUi.serve
+//   //   : (req, res) => successReq(res, null, "hi"),
+//   swaggerUi.setup(swaggerDocs)
+// );
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
