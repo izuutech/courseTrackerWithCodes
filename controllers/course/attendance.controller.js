@@ -171,7 +171,6 @@ const add_student_to_attendance = async (req, res) => {
         ...attendance.attendees,
         body.studentIds,
       ]);
-      console.log({ newAttendance });
       const [updateAttendance, updateAttendanceErr] = await handlePromise(
         Attendance.findByIdAndUpdate(
           attendance._id,
