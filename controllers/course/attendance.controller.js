@@ -68,19 +68,61 @@ const create_attendance = async (req, res) => {
   const lecturer = res.locals.user;
   const courseId = req.params.courseId;
   const uniqueId = uuid.v4();
-  const [course, courseErr] = await handlePromise(Course.findById(courseId));
+
+  const [course, courseErr] = await handlePromise(
+    Course.findById(courseId).populate("schedules")
+  );
   if (course) {
-    const incoming = {
-      uniqueId,
-      course: course._id,
-      lecturer: lecturer._id,
-    };
-    const attendance = new Attendance(incoming);
-    const [saved, savedErr] = await handlePromise(attendance.save());
-    if (saved) {
-      createSuccess(res, { barcodeId: saved.uniqueId }, "Attendance generated");
+    const allDays = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const todaysDate = new Date();
+    const todaysDay = allDays[todaysDate.getDay()];
+    const scheduleDays = course.schedules.map((schedule, index) => {
+      return allDays.indexOf(schedule.day);
+    });
+    const sortSchedule = scheduleDays.sort((a, b) => a - b);
+    let nextDay;
+    for (let x = 0; x < sortSchedule.length; x++) {
+      if (todaysDay < sortSchedule[x]) {
+        nextDay = sortSchedule[x];
+        break;
+      } else {
+        nextDay = sortSchedule[0];
+      }
+    }
+
+    const nextDayName = allDays[nextDay];
+    const theNextSchedule = course.schedules.filter((schedule) => {
+      return nextDayName === schedule.day;
+    });
+
+    if (theNextSchedule[0]) {
+      const incoming = {
+        uniqueId,
+        course: course._id,
+        lecturer: lecturer._id,
+        schedule: theNextSchedule[0],
+      };
+      const attendance = new Attendance(incoming);
+      const [saved, savedErr] = await handlePromise(attendance.save());
+      if (saved) {
+        createSuccess(
+          res,
+          { barcodeId: saved.uniqueId },
+          "Attendance generated"
+        );
+      } else {
+        serverError(res, null, "Could not save attendance");
+      }
     } else {
-      serverError(res, null, "Could not save attendance");
+      serverError(res, null, "Something went terribly wrong");
     }
   } else {
     serverError(res, courseErr, "Could not fetch the course");

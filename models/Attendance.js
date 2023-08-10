@@ -19,6 +19,11 @@ const attendanceSchema = schema(
       ref: "User",
       required: [true, "Please enter the id of the lecturer"],
     },
+    schedule: {
+      type: schema.Types.ObjectId,
+      required: [true, "Please enter the schedules of the class"],
+      ref: "Schedule",
+    },
     attendees: [
       {
         type: schema.Types.ObjectId,

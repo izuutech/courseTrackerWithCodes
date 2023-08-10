@@ -25,6 +25,9 @@ const scheduleSchema = schema(
       type: Number,
       required: [true, "Please enter the end minute"],
     },
+    date: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

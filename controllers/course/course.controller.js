@@ -44,28 +44,52 @@ const save_created_course = async (req, res, scheduleIds) => {
   }
 };
 
+const hasDuplicateValue = (array) => {
+  const valueCount = {};
+
+  for (const value of array) {
+    if (valueCount[value]) {
+      return true; // Value appeared twice, so return true
+    } else {
+      valueCount[value] = true; // Mark the value as seen
+    }
+  }
+
+  return false; // No value appeared twice
+};
+
 const create_course = async (req, res) => {
   const body = req.body;
   const suppliedSchedules = body.schedules;
-
-  if (suppliedSchedules && suppliedSchedules[0]) {
-    const validateSch = validateSchedule(suppliedSchedules);
-    if (validateSch.error) {
-      console.log(":meee", validateSch.error.details[0]);
-      reqError(res, null, `${validateSch.error.details[0].message}`);
+  if (
+    suppliedSchedules &&
+    Array.isArray(suppliedSchedules) &&
+    suppliedSchedules[0]
+  ) {
+    const days = suppliedSchedules.map((s) => {
+      return s.day;
+    });
+    if (hasDuplicateValue(days)) {
+      reqError(res, null, "You cannot teach a course twice in a day");
     } else {
-      const [savedSchedules, savedSchedulesErr] = await handlePromise(
-        Schedule.insertMany(suppliedSchedules)
-      );
-      if (savedSchedules) {
-        const scheduleIds = savedSchedules
-          ? savedSchedules.map((schedule) => {
-              return schedule._id;
-            })
-          : [];
-        save_created_course(req, res, scheduleIds);
+      const validateSch = validateSchedule(suppliedSchedules);
+      if (validateSch.error) {
+        console.log(":meee", validateSch.error.details[0]);
+        reqError(res, null, `${validateSch.error.details[0].message}`);
       } else {
-        reqError(res, savedSchedulesErr, "Could not save schedules");
+        const [savedSchedules, savedSchedulesErr] = await handlePromise(
+          Schedule.insertMany(suppliedSchedules)
+        );
+        if (savedSchedules) {
+          const scheduleIds = savedSchedules
+            ? savedSchedules.map((schedule) => {
+                return schedule._id;
+              })
+            : [];
+          save_created_course(req, res, scheduleIds);
+        } else {
+          reqError(res, savedSchedulesErr, "Could not save schedules");
+        }
       }
     }
   } else {

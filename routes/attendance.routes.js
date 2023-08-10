@@ -93,6 +93,12 @@ attendanceRoute.get(
  *              schema:
  *                  type: string
  *              description: id of the course
+ *          -   in: body
+ *              name: customDate
+ *              required: false
+ *              schema:
+ *                  type: string
+ *              description: custom date. should be of date iso string. TO do it you can creat a new date and do .toISOString()
  *      responses:
  *          200:
  *              description: Barcode id created successfully
