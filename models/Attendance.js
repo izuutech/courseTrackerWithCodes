@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const uniqueValidator = require("mongoose-unique-validator");
 
 const schema = mongoose.Schema;
 
@@ -28,6 +29,16 @@ const attendanceSchema = schema(
       {
         type: schema.Types.ObjectId,
         ref: "User",
+        validate: {
+          validator: async function (value) {
+            const duplicateCount = value.filter(
+              (item, index) => value.indexOf(item) !== index
+            ).length;
+            return duplicateCount === 0;
+          },
+
+          message: "Duplicate attendees are not allowed",
+        },
       },
     ],
   },
