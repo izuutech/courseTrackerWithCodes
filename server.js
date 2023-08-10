@@ -34,7 +34,7 @@ app.use(
     origin: "*",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: true,
-    optionsSuccessStatus: 204,
+    optionsSuccessStatus: 200,
   })
 );
 // parse application/x-www-form-urlencoded
