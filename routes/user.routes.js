@@ -1,6 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const userController = require("../controllers/user/user.controller");
+const { requireAuth } = require("../middleware/auth.middleware");
 const upload = multer({ dest: "./temp/uploads/" });
 
 const userRoute = express.Router();
@@ -46,12 +47,12 @@ const userRoute = express.Router();
  *              description: An operation failed.
  */
 userRoute.use(upload.single("avatar"));
-userRoute.put("/", userController.modify_user);
+userRoute.put("/", requireAuth, userController.modify_user);
 
 /**
  * @swagger
  * /user/change-password:
- *  post:
+ *  put:
  *      summary: Change  user password
  *      tags:
  *          - user
@@ -83,6 +84,6 @@ userRoute.put("/", userController.modify_user);
  *              description: An operation failed.
  */
 
-userRoute.post("/change-password", userController.change_password);
+userRoute.put("/change-password", requireAuth, userController.change_password);
 
 module.exports = userRoute;
