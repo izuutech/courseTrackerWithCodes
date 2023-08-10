@@ -23,9 +23,9 @@ mongoose
   })
   .then((result) => {
     console.log("MongoDB connected");
-    if (process.env.STAGE === "development") {
-      app.listen(PORT, () => console.log(`server running on ${PORT}`));
-    }
+    // if (process.env.STAGE === "development") {
+    app.listen(PORT, () => console.log(`server running on ${PORT}`));
+    // }
   })
   .catch((err) => console.log(err));
 
