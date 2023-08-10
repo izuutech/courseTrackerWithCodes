@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const cloudinary = require("cloudinary");
 const { validateUser, User } = require("../../models/User");
 const handlePromise = require("../../utils/handlePromise.utils");
 const {
@@ -8,9 +9,16 @@ const {
 } = require("../../utils/responses.utils");
 const { gmailsendEmailConfirmation } = require("./email.controller");
 
+cloudinary.config({
+  cloud_name: "dyx2e9ox4",
+  api_key: "348882827666355",
+  api_secret: "Q-wYSL5K2j0J3bLWGMgU5mTzTuE",
+});
+
 const register_student = async (req, res) => {
   const body = req.body;
   const file = req.file;
+
   const random = Math.floor(Math.random() * 10000).toString();
   const code =
     random.length < 4
@@ -81,27 +89,41 @@ const register_student = async (req, res) => {
       } else {
         bcrypt.hash(incomingUser.password, 10, async (hashErr, hash) => {
           if (!hashErr) {
-            const user = new User({ ...incomingUser, password: hash });
-            const [saved, savedErr] = await handlePromise(user.save());
-            console.log(JSON.stringify(savedErr));
-            if (saved) {
-              const emailDetails = {
-                verificationCode: code,
-                from: "futofyp@gmail.com",
-                to: saved.email,
-                firstname: saved.firstname,
-                subject: "Verify your email",
-              };
+            cloudinary.v2.uploader.upload(
+              req.file.path,
+              { public_id: req.file.originalname },
+              async function (error, result) {
+                if (error) {
+                  serverError(res, null, "Image not uploaded");
+                } else {
+                  const user = new User({
+                    ...incomingUser,
+                    password: hash,
+                    avatar: result.secure_url,
+                  });
+                  const [saved, savedErr] = await handlePromise(user.save());
+                  console.log(JSON.stringify(savedErr));
+                  if (saved) {
+                    const emailDetails = {
+                      verificationCode: code,
+                      from: "futofyp@gmail.com",
+                      to: saved.email,
+                      firstname: saved.firstname,
+                      subject: "Verify your email",
+                    };
 
-              const sent = await gmailsendEmailConfirmation(emailDetails);
-              successReq(
-                res,
-                saved,
-                "Registration successful. Please verify your email"
-              );
-            } else {
-              serverError(res, savedErr, "Could not register user");
-            }
+                    const sent = await gmailsendEmailConfirmation(emailDetails);
+                    successReq(
+                      res,
+                      saved,
+                      "Registration successful. Please verify your email"
+                    );
+                  } else {
+                    serverError(res, savedErr, "Could not register user");
+                  }
+                }
+              }
+            );
           } else {
             serverError(res, hashErr, "Could not encrypt your password");
           }

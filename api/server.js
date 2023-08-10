@@ -9,7 +9,7 @@ const cors = require("cors");
 
 //swagger
 const swaggerUi = require("swagger-ui-express");
-const swaggerDocs = require("./swaggerConfig");
+const swaggerDocs = require("../swaggerConfig");
 
 const MONGO_URI = process.env.MONGO_URI;
 // const MONGO_URI = process.env.LOCAL_MONGO_URI;
@@ -43,9 +43,9 @@ app.use(bodyParser.json());
 
 app.use(
   "/api-docs",
-  process.env.STAGE === "development"
-    ? swaggerUi.serve
-    : (req, res) => successReq(res, null, "hi"),
+  // process.env.STAGE === "development"
+  //   ? swaggerUi.serve
+  //   : (req, res) => successReq(res, null, "hi"),
   swaggerUi.setup(swaggerDocs)
 );
 
@@ -65,10 +65,10 @@ app.get("/", (req, res) => {
 });
 
 // general
-const authRoute = require("./routes/auth.routes");
-const courseRoute = require("./routes/course.routes");
-const attendanceRoute = require("./routes/attendance.routes");
-const userRoute = require("./routes/user.routes");
+const authRoute = require("../routes/auth.routes");
+const courseRoute = require("../routes/course.routes");
+const attendanceRoute = require("../routes/attendance.routes");
+const userRoute = require("../routes/user.routes");
 
 //general
 app.use("/", authRoute);
