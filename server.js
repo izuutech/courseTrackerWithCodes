@@ -37,6 +37,7 @@ app.use(
     optionsSuccessStatus: 200,
   })
 );
+
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());

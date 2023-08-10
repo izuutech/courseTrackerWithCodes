@@ -122,7 +122,7 @@ authRoute.post("/register", registerController.register_student);
 //route for registering user
 /**
  * @swagger
- * /register-verify/{id}:
+ * /register-verify:
  *  post:
  *      summary: Verify  user
  *      tags:
