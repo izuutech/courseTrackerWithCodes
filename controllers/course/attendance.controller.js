@@ -6,6 +6,7 @@ const {
   serverError,
   createSuccess,
   successReq,
+  notFound,
 } = require("../../utils/responses.utils");
 const Attendance = require("../../models/Attendance");
 
@@ -133,8 +134,10 @@ const fetch_all_attendance_for_single_course = async (req, res) => {
   const [attendances, attendancesErr] = await handlePromise(
     Attendance.find({ course: courseId }).populate("course")
   );
-  if (attendances) {
+  if (attendances && attendances[0]) {
     successReq(res, attendances, "All attendance fetched");
+  } else if (attendances) {
+    notFound(res, [], "No attendance yet");
   } else {
     serverError(
       res,
