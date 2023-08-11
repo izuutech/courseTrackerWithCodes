@@ -116,7 +116,7 @@ attendanceRoute.put(
 
 attendanceRoute.get(
   "/:attendanceId",
-  requireLecturer,
+  requireAuth,
   attendanceController.fetch_single_attendance
 );
 
@@ -152,7 +152,7 @@ attendanceRoute.get(
 
 attendanceRoute.get(
   "/:courseId",
-  requireLecturer,
+  requireAuth,
   attendanceController.fetch_all_attendance_for_single_course
 );
 
