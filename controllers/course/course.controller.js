@@ -130,7 +130,7 @@ const fetch_single_courses = async (req, res) => {
     if (courseByCode) {
       successReq(res, courseByCode, "Course fetched");
     } else {
-      serverError(res, courseByCodeErr || courseErr, "Could not fetch course");
+      reqError(res, courseByCodeErr || courseErr, "Could not fetch course");
     }
   }
 };
@@ -152,7 +152,7 @@ const save_student_courses = async (res, course, newStudents, operation) => {
       } ${operation === "add" ? "to" : "from"} your list of courses`
     );
   } else {
-    serverError(res, addErr, "Could not save to the list of your courses");
+    reqError(res, addErr, "Could not save to the list of your courses");
   }
 };
 
@@ -175,7 +175,7 @@ const toggele_add_course_to_courses_for_student = async (req, res) => {
       save_student_courses(res, course, newStudents, "add");
     }
   } else {
-    serverError(res, courseErr, "Could not fetch course");
+    reqError(res, courseErr, "Could not fetch course");
   }
 };
 
@@ -196,7 +196,7 @@ const save_lecturer_courses = async (res, course, newLecturers, operation) => {
       } ${operation === "add" ? "to" : "from"} your list of courses`
     );
   } else {
-    serverError(res, addErr, "Could not save to the list of your courses");
+    reqError(res, addErr, "Could not save to the list of your courses");
   }
 };
 
@@ -219,7 +219,7 @@ const toggele_add_course_to_courses_for_lecturers = async (req, res) => {
       save_lecturer_courses(res, course, newLecturers, "add");
     }
   } else {
-    serverError(res, courseErr, "Could not fetch course");
+    reqError(res, courseErr, "Could not fetch course");
   }
 };
 
