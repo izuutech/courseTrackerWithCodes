@@ -122,7 +122,7 @@ const create_attendance = async (req, res) => {
         serverError(res, null, "Could not save attendance");
       }
     } else {
-      serverError(res, null, "Something went terribly wrong");
+      reqError(res, null, "Please create a schedule before adding attendance");
     }
   } else {
     serverError(res, courseErr, "Could not fetch the course");
