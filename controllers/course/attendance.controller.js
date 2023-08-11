@@ -131,11 +131,25 @@ const create_attendance = async (req, res) => {
 
 const fetch_all_attendance_for_single_course = async (req, res) => {
   const courseId = req.params.courseId;
+  const user = res.locals.user;
   const [attendances, attendancesErr] = await handlePromise(
     Attendance.find({ course: courseId }).populate("course")
   );
   if (attendances && attendances[0]) {
-    successReq(res, attendances, "All attendance fetched");
+    if (user.role === "lecturer") {
+      successReq(res, attendances, "All attendance fetched");
+    } else {
+      const allAttendance = attendances.map((attendance) => {
+        const isPresent = attendance._doc.attendees.filter((student) => {
+          return student.toString() === user._id.toString();
+        });
+        return {
+          ...attendance._doc,
+          present: isPresent[0] ? true : false,
+        };
+      });
+      successReq(res, allAttendance, "All attendance fetched");
+    }
   } else if (attendances && !attendances[0]) {
     notFound(res, [], "No attendance yet");
   } else {
@@ -158,7 +172,7 @@ const fetch_single_attendance = async (req, res) => {
   if (attendance) {
     successReq(res, attendance, "Attendance fetched");
   } else {
-    serverError(
+    reqError(
       res,
       attendanceErr,
       "Could not fetch attendance list for this course"

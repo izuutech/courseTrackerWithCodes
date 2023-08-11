@@ -115,7 +115,7 @@ attendanceRoute.put(
  */
 
 attendanceRoute.get(
-  "/:attendanceId",
+  "/single/:attendanceId",
   requireAuth,
   attendanceController.fetch_single_attendance
 );
