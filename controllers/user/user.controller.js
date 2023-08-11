@@ -74,20 +74,23 @@ const change_user_details = async (res, user, body, result) => {
     )
   );
   if (updateUser) {
-    successReq(res, null, "Profile updated successfully");
+    successReq(
+      res,
+      { ...updateUser, password: null },
+      "Profile updated successfully"
+    );
   } else {
     serverError(res, updateUserErr, "Could not update your data");
   }
 };
 
-const modify_user = (async = async (req, res) => {
+const modify_user = async (req, res) => {
   const body = req.body;
   const user = res.locals.user;
-  console.log(body, "boddddd");
   if (req.file) {
     cloudinary.v2.uploader.upload(
       req.file.path,
-      { public_id: req.file.originalname },
+      { public_id: req.file.filename },
       async function (error, result) {
         if (error) {
           serverError(res, null, "Image not uploaded");
@@ -99,6 +102,12 @@ const modify_user = (async = async (req, res) => {
   } else {
     change_user_details(res, user, body);
   }
-});
+};
 
-module.exports = { change_password, modify_user };
+const fetch_user = async (req, res) => {
+  const user = res.locals.user;
+
+  successReq(res, user, "User fetched");
+};
+
+module.exports = { change_password, modify_user, fetch_user };

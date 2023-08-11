@@ -25,6 +25,7 @@ const requireAuth = (req, res, next) => {
             department: person.department,
             regNoOrCode: person.regNoOrCode,
             role: person.role,
+            avatar: person.avatar,
           };
 
           next();
@@ -69,6 +70,7 @@ const requireStudent = (req, res, next) => {
             firstName: person.firstName,
             department: person.department,
             regNoOrCode: person.regNoOrCode,
+            avatar: person.avatar,
             role: person.role,
           };
 
@@ -116,6 +118,7 @@ const requireLecturer = (req, res, next) => {
             firstName: person.firstName,
             department: person.department,
             regNoOrCode: person.regNoOrCode,
+            avatar: person.avatar,
             role: person.role,
           };
 

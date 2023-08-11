@@ -9,6 +9,30 @@ const userRoute = express.Router();
 /**
  * @swagger
  * /user:
+ *  get:
+ *      summary: Fetch user details
+ *      tags:
+ *          - user
+ *      responses:
+ *          200:
+ *              description: User fetched  successfully
+ *          400:
+ *              description: Bad request format
+ *          401:
+ *              description: Authentication failed
+ *          403:
+ *              description: Forbidden error (most likely due to authentication mismatch)
+ *          404:
+ *              description: Not found
+ *          500:
+ *              description: An operation failed.
+ */
+
+userRoute.get("/", requireAuth, userController.fetch_user);
+
+/**
+ * @swagger
+ * /user:
  *  put:
  *      summary: Change  user password
  *      tags:
@@ -46,7 +70,7 @@ const userRoute = express.Router();
  *          500:
  *              description: An operation failed.
  */
-userRoute.use(upload.single("avatar"));
+// userRoute.use(upload.single("avatar"));
 userRoute.put("/", requireAuth, userController.modify_user);
 
 /**
