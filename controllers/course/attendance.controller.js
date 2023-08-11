@@ -136,10 +136,10 @@ const fetch_all_attendance_for_single_course = async (req, res) => {
   );
   if (attendances && attendances[0]) {
     successReq(res, attendances, "All attendance fetched");
-  } else if (attendances) {
+  } else if (attendances && !attendances[0]) {
     notFound(res, [], "No attendance yet");
   } else {
-    serverError(
+    reqError(
       res,
       attendancesErr,
       "Could not fetch all attendance list for this course"
