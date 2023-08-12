@@ -17,6 +17,7 @@ const save_created_course = async (req, res, scheduleIds) => {
     courseCode: body.courseCode,
     courseType: body.courseType,
     description: body.description,
+    department: body.department,
     level: body.level,
     venue: body.venue,
     schedules: scheduleIds || [],
@@ -75,7 +76,6 @@ const create_course = async (req, res) => {
     } else {
       const validateSch = validateSchedule(suppliedSchedules);
       if (validateSch.error) {
-        console.log(":meee", validateSch.error.details[0]);
         reqError(res, null, `${validateSch.error.details[0].message}`);
       } else {
         const [savedSchedules, savedSchedulesErr] = await handlePromise(
@@ -136,8 +136,79 @@ const fetch_single_courses = async (req, res) => {
   }
 };
 
+const update_course = async (res, body, course, scheduleIds) => {
+  const data = {
+    title: body.title,
+    courseCode: body.courseCode,
+    courseType: body.courseType,
+    description: body.description,
+    department: body.department,
+    level: body.level,
+    venue: body.venue,
+    schedules: scheduleIds || course.schedules,
+  };
+  const validateStatus = validateCourse(data);
+  if (validateStatus.error) {
+    reqError(res, null, `${validateStatus.error.details[0].message}`);
+  } else {
+    const [updateCourse, updateCourseErr] = await handlePromise(
+      Course.findByIdAndUpdate(course._id, data, { returnDocument: "after" })
+    );
+    if (updateCourse) {
+      successReq(res, null, "Course updated successfully");
+    } else {
+      reqError(res, updateCourseErr, "Could not update course");
+    }
+  }
+};
+
+const edit_course = async (req, res) => {
+  const body = req.body;
+
+  const [course, courseErr] = await handlePromise(
+    Course.findById(req.params.id)
+  );
+  if (course) {
+    const suppliedSchedules = body.schedules;
+    if (
+      suppliedSchedules &&
+      Array.isArray(suppliedSchedules) &&
+      suppliedSchedules[0]
+    ) {
+      const days = suppliedSchedules.map((s) => {
+        return s.day;
+      });
+      if (hasDuplicateValue(days)) {
+        reqError(res, null, "You cannot teach a course twice in a day");
+      } else {
+        const validateSch = validateSchedule(suppliedSchedules);
+        if (validateSch.error) {
+          reqError(res, null, `${validateSch.error.details[0].message}`);
+        } else {
+          const [savedSchedules, savedSchedulesErr] = await handlePromise(
+            Schedule.insertMany(suppliedSchedules)
+          );
+          if (savedSchedules) {
+            const scheduleIds = savedSchedules
+              ? savedSchedules.map((schedule) => {
+                  return schedule._id;
+                })
+              : [];
+            update_course(res, body, course, scheduleIds);
+          } else {
+            reqError(res, savedSchedulesErr, "Could not save schedules");
+          }
+        }
+      }
+    } else {
+      update_course(res, body, course);
+    }
+  } else {
+    reqError(res, courseErr, "Could not fetch course");
+  }
+};
+
 const delete_course = async (req, res) => {
-  const lecturer = res.locals.user;
   const [course, courseErr] = await handlePromise(
     Course.findById(req.params.id)
   );
@@ -247,6 +318,7 @@ module.exports = {
   create_course,
   fetch_all_courses,
   fetch_single_courses,
+  edit_course,
   delete_course,
   toggele_add_course_to_courses_for_student,
   toggele_add_course_to_courses_for_lecturers,

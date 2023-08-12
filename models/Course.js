@@ -18,6 +18,10 @@ const courseSchema = schema(
       type: String,
       required: [true, "Please enter course code"],
     },
+    department: {
+      type: String,
+      required: [true, "Please enter department"],
+    },
     description: {
       type: String,
     },
@@ -58,6 +62,7 @@ const validateCourse = (course) => {
     courseCode: Joi.string().min(2).required().label("Course code"),
     courseType: Joi.string().min(2).required().label("Course type"),
     description: Joi.string().min(2).required().label("Description"),
+    department: Joi.string().min(2).required().label("Department"),
     level: Joi.string().min(2).required().label("Level"),
     venue: Joi.string().required().label("Venue"),
     schedules: Joi.array().label("Schedules"),
