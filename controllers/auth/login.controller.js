@@ -40,6 +40,7 @@ const login_user = async (req, res) => {
                   firstName: user.firstName,
                   department: user.department,
                   regNoOrCode: user.regNoOrCode,
+                  avatar: user.avatar,
                   _id: user._id,
                 },
               });
@@ -65,6 +66,7 @@ const login_user = async (req, res) => {
                   firstName: user.firstName,
                   department: user.department,
                   regNoOrCode: user.regNoOrCode,
+                  avatar: user.avatar,
                   _id: user._id,
                 },
               });
