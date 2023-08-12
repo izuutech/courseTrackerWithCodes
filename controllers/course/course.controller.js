@@ -6,6 +6,7 @@ const {
   createSuccess,
   successReq,
   serverError,
+  forbidError,
 } = require("../../utils/responses.utils");
 
 const save_created_course = async (req, res, scheduleIds) => {
@@ -135,6 +136,25 @@ const fetch_single_courses = async (req, res) => {
   }
 };
 
+const delete_course = async (req, res) => {
+  const lecturer = res.locals.user;
+  const [course, courseErr] = await handlePromise(
+    Course.findById(req.params.id)
+  );
+  if (course) {
+    const [deleteCourse, deleteCourseErr] = await handlePromise(
+      Course.findByIdAndDelete(course._id)
+    );
+    if (deleteCourse) {
+      successReq(res, course, "Course deleted successfully");
+    } else {
+      forbidError(res, null, "Course could not be deleted");
+    }
+  } else {
+    reqError(res, courseErr, "Could not fetch course");
+  }
+};
+
 const save_student_courses = async (res, course, newStudents, operation) => {
   const [add, addErr] = await handlePromise(
     Course.findByIdAndUpdate(
@@ -227,6 +247,7 @@ module.exports = {
   create_course,
   fetch_all_courses,
   fetch_single_courses,
+  delete_course,
   toggele_add_course_to_courses_for_student,
   toggele_add_course_to_courses_for_lecturers,
 };

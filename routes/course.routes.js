@@ -217,4 +217,35 @@ courseRoute.put(
 
 courseRoute.get("/:id", requireAuth, courseController.fetch_single_courses);
 
+/**
+ * @swagger
+ * /courses/{id}:
+ *  delete:
+ *      summary: Delete a course
+ *      tags:
+ *          - courses
+ *      parameters:
+ *          -   in: params
+ *              name: id
+ *              required: true
+ *              schema:
+ *                  type: string
+ *              description: _id of the course to be deleted
+ *      responses:
+ *          200:
+ *              description: Course fetched successfully
+ *          400:
+ *              description: Bad request format
+ *          401:
+ *              description: Authentication failed
+ *          403:
+ *              description: Forbidden error (most likely due to authentication mismatch)
+ *          404:
+ *              description: Not found
+ *          500:
+ *              description: An operation failed.
+ */
+
+courseRoute.delete("/:id", requireLecturer, courseController.delete_course);
+
 module.exports = courseRoute;

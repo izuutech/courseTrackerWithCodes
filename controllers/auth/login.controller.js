@@ -2,7 +2,11 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { User } = require("../../models/User");
 const handlePromise = require("../../utils/handlePromise.utils");
-const { reqError, authError } = require("../../utils/responses.utils");
+const {
+  reqError,
+  authError,
+  unprocessReq,
+} = require("../../utils/responses.utils");
 
 const createToken = async (id) => {
   return jwt.sign({ id: id }, process.env.JWT_KEY, {
@@ -72,7 +76,7 @@ const login_user = async (req, res) => {
               });
           }
         } else {
-          authError(
+          unprocessReq(
             res,
             userErr,
             "You cannot login because you have not verified your email."
