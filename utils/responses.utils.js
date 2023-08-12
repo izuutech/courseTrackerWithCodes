@@ -55,6 +55,13 @@ const notFound = (res, data, customMessage) => {
     data: data ? data : null,
   });
 };
+const unprocessReq = (res, data, customMessage) => {
+  res.status(422).json({
+    message: customMessage ? customMessage : `Your request cannot be processed`,
+    error: null,
+    data: data ? data : null,
+  });
+};
 
 module.exports = {
   successReq,
@@ -64,4 +71,5 @@ module.exports = {
   authError,
   forbidError,
   notFound,
+  unprocessReq,
 };

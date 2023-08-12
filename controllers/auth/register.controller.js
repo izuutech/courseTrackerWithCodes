@@ -6,6 +6,7 @@ const {
   reqError,
   serverError,
   successReq,
+  unprocessReq,
 } = require("../../utils/responses.utils");
 const { gmailsendEmailConfirmation } = require("./email.controller");
 
@@ -83,7 +84,7 @@ const register_student = async (req, res) => {
           subject: "Verify your email",
         };
         const sent = await gmailsendEmailConfirmation(emailDetails);
-        reqError(
+        unprocessReq(
           res,
           null,
           "User already registered. Please check your email for verification code"
