@@ -10,21 +10,27 @@ const attendanceRoute = express.Router();
 
 /**
  * @swagger
- * /attendance/mark/{barcodeId}:
+ * /attendance/mark/{attendanceId}:
  *  put:
  *      summary: Mark attendance for a course
  *      tags:
  *          - attendance
  *      parameters:
  *          -   in: params
- *              name: barcodeId
+ *              name: attendanceId
  *              required: true
  *              schema:
  *                  type: string
- *              description: unique id encrypted on the barcode
+ *              description: id of the attendance to be marked
+ *          -   in: body
+ *              name: code
+ *              required: true
+ *              schema:
+ *                  type: string
+ *              description: code of the attendance to be marked and used
  *      responses:
  *          200:
- *              description: Barcode id created successfully
+ *              description: Attendance marked successfully
  *          400:
  *              description: Bad request format
  *          401:
@@ -38,7 +44,7 @@ const attendanceRoute = express.Router();
  */
 
 attendanceRoute.put(
-  "/mark/:barcodeId",
+  "/mark/:attendanceId",
   requireStudent,
   attendanceController.markAttendance
 );
@@ -160,7 +166,7 @@ attendanceRoute.get(
  * @swagger
  * /attendance/{courseId}:
  *  post:
- *      summary: Create attendance or barcode id
+ *      summary: Create attendance and the pins
  *      tags:
  *          - attendance
  *      parameters:
@@ -170,6 +176,12 @@ attendanceRoute.get(
  *              schema:
  *                  type: string
  *              description: id of the course
+ *          -   in: body
+ *              name: numOfCodes
+ *              required: true
+ *              schema:
+ *                  type: string
+ *              description: number of codes to be created
  *          -   in: body
  *              name: customDate
  *              required: false

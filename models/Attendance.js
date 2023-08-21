@@ -5,10 +5,12 @@ const schema = mongoose.Schema;
 
 const attendanceSchema = schema(
   {
-    uniqueId: {
+    numOfCodes: {
       type: String,
-      required: [true, "Please enter id to be encoded in barcorde"],
-      uniqueId: [true, "Unique id must be unique"],
+      required: [
+        true,
+        "Please enter the number of codes to be generated for the attendance",
+      ],
     },
     course: {
       type: schema.Types.ObjectId,

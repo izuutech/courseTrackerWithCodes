@@ -9,65 +9,109 @@ const {
   notFound,
 } = require("../../utils/responses.utils");
 const Attendance = require("../../models/Attendance");
+const Code = require("../../models/Code");
 
 const markAttendance = async (req, res) => {
   const user = res.locals.user;
-  const barcodeId = req.params.barcodeId;
-  const [attendance, attendanceErr] = await handlePromise(
-    Attendance.findOne({ uniqueId: barcodeId }).populate("course")
+  const body = req.body;
+  const attendanceId = req.params.attendanceId;
+  const [code, codeErr] = await handlePromise(
+    Code.findOne({ attendance: attendanceId, code: body.code })
   );
-  if (attendance) {
-    const [course, courseErr] = await handlePromise(
-      Course.findById(attendance.course)
+  if (code && code.status === false) {
+    const [attendance, attendanceErr] = await handlePromise(
+      Attendance.findById(code.attendance).populate("course")
     );
-    if (course) {
-      const haveRegisteredForTheCourse = course.students.filter((student) => {
-        return student.toString() === user._id.toString();
-      });
-      if (haveRegisteredForTheCourse[0]) {
-        const haveAttended = attendance.attendees.filter((attendee) => {
-          return attendee.toString() === user._id.toString();
+    if (attendance) {
+      const [course, courseErr] = await handlePromise(
+        Course.findById(attendance.course)
+      );
+      if (course) {
+        const haveRegisteredForTheCourse = course.students.filter((student) => {
+          return student.toString() === user._id.toString();
         });
-        if (haveAttended[0]) {
+        if (haveRegisteredForTheCourse[0]) {
+          const haveAttended = attendance.attendees.filter((attendee) => {
+            return attendee.toString() === user._id.toString();
+          });
+          if (haveAttended[0]) {
+            reqError(
+              res,
+              null,
+              "You have already marked attendance for this course."
+            );
+          } else {
+            const newAttendance = [...attendance.attendees, user._id];
+            const [updateAttendance, updateAttendanceErr] = await handlePromise(
+              Attendance.findByIdAndUpdate(
+                attendance._id,
+                { attendees: newAttendance },
+                { returnDocument: "after" }
+              )
+            );
+            if (updateAttendance) {
+              const [updateCode, updateCodeErr] = await handlePromise(
+                Code.findByIdAndUpdate(
+                  code._id,
+                  { used: true },
+                  { returnDocument: "after" }
+                )
+              );
+              if (updateCode) {
+                successReq(res, null, "Your attendance has been marked");
+              } else {
+                successReq(
+                  res,
+                  null,
+                  "Your attendance has been marked but code was not ticked as used"
+                );
+              }
+            } else {
+              serverError(res, null, "Could not update attendance");
+            }
+          }
+        } else {
           reqError(
             res,
             null,
-            "You have already marked attendance for this course."
+            "You must register for this course to mark attendance"
           );
-        } else {
-          const newAttendance = [...attendance.attendees, user._id];
-          const [updateAttendance, updateAttendanceErr] = await handlePromise(
-            Attendance.findByIdAndUpdate(
-              attendance._id,
-              { attendees: newAttendance },
-              { returnDocument: "after" }
-            )
-          );
-          if (updateAttendance) {
-            successReq(res, null, "Your attendance has been marked");
-          } else {
-            serverError(res, null, "Could not update attendance");
-          }
         }
       } else {
-        reqError(
-          res,
-          null,
-          "You must register for this course to mark attendance"
-        );
+        serverError(res, null, "Could not fetch course");
       }
     } else {
-      serverError(res, null, "Could not fetch course");
+      serverError(res, null, "Could not fetch attendance");
     }
+  } else if (code && code.status) {
+    forbidError(res, null, "Code has been used already");
   } else {
-    serverError(res, null, "Could not fetch attendance");
+    reqError(res, codeErr, "Could not fetch code for that attendance");
   }
+};
+
+const generateUniqueCodes = (count) => {
+  const generatedCodes = new Set();
+  const codes = [];
+
+  while (generatedCodes.size < count) {
+    const code = Math.floor(Math.random() * 900000) + 100000; // Generate 6-digit random number
+    generatedCodes.add(code);
+  }
+
+  generatedCodes.forEach((code) => {
+    codes.push(code);
+  });
+
+  return codes;
 };
 
 const create_attendance = async (req, res) => {
   const lecturer = res.locals.user;
   const courseId = req.params.courseId;
   const uniqueId = uuid.v4();
+  const numOfCodes = req.body.numOfCodes;
+  const allCodes = generateUniqueCodes(numOfCodes);
 
   const [course, courseErr] = await handlePromise(
     Course.findById(courseId).populate("schedules")
@@ -105,7 +149,7 @@ const create_attendance = async (req, res) => {
 
     if (theNextSchedule[0]) {
       const incoming = {
-        uniqueId,
+        numOfCodes,
         course: course._id,
         lecturer: lecturer._id,
         schedule: theNextSchedule[0],
@@ -113,11 +157,22 @@ const create_attendance = async (req, res) => {
       const attendance = new Attendance(incoming);
       const [saved, savedErr] = await handlePromise(attendance.save());
       if (saved) {
-        createSuccess(
-          res,
-          { barcodeId: saved.uniqueId },
-          "Attendance generated"
+        const [savedCodes, savedCodesErr] = await handlePromise(
+          Code.insertMany(allCodes)
         );
+        if (savedCodes) {
+          createSuccess(
+            res,
+            { uniqueCodes: savedCodes },
+            "Attendance generated"
+          );
+        } else {
+          serverError(
+            res,
+            savedCodesErr,
+            "Your unique codes could not be saved but attendance was created"
+          );
+        }
       } else {
         serverError(res, null, "Could not save attendance");
       }
