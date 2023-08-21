@@ -7,6 +7,7 @@ const {
   createSuccess,
   successReq,
   notFound,
+  forbidError,
 } = require("../../utils/responses.utils");
 const Attendance = require("../../models/Attendance");
 const Code = require("../../models/Code");
@@ -15,10 +16,11 @@ const markAttendance = async (req, res) => {
   const user = res.locals.user;
   const body = req.body;
   const attendanceId = req.params.attendanceId;
+  console.log(attendanceId, body.code);
   const [code, codeErr] = await handlePromise(
     Code.findOne({ attendance: attendanceId, code: body.code })
   );
-  if (code && code.status === false) {
+  if (code && code.used === false) {
     const [attendance, attendanceErr] = await handlePromise(
       Attendance.findById(code.attendance).populate("course")
     );
@@ -83,7 +85,7 @@ const markAttendance = async (req, res) => {
     } else {
       serverError(res, null, "Could not fetch attendance");
     }
-  } else if (code && code.status) {
+  } else if (code && code.used) {
     forbidError(res, null, "Code has been used already");
   } else {
     reqError(res, codeErr, "Could not fetch code for that attendance");
@@ -109,78 +111,89 @@ const generateUniqueCodes = (count) => {
 const create_attendance = async (req, res) => {
   const lecturer = res.locals.user;
   const courseId = req.params.courseId;
-  const uniqueId = uuid.v4();
   const numOfCodes = req.body.numOfCodes;
-  const allCodes = generateUniqueCodes(numOfCodes);
-
-  const [course, courseErr] = await handlePromise(
-    Course.findById(courseId).populate("schedules")
-  );
-  if (course) {
-    const allDays = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
-    const todaysDate = new Date();
-    const todaysDay = allDays[todaysDate.getDay()];
-    const scheduleDays = course.schedules.map((schedule, index) => {
-      return allDays.indexOf(schedule.day);
-    });
-    const sortSchedule = scheduleDays.sort((a, b) => a - b);
-    let nextDay;
-    for (let x = 0; x < sortSchedule.length; x++) {
-      if (todaysDay < sortSchedule[x]) {
-        nextDay = sortSchedule[x];
-        break;
-      } else {
-        nextDay = sortSchedule[0];
-      }
-    }
-
-    const nextDayName = allDays[nextDay];
-    const theNextSchedule = course.schedules.filter((schedule) => {
-      return nextDayName === schedule.day;
-    });
-
-    if (theNextSchedule[0]) {
-      const incoming = {
-        numOfCodes,
-        course: course._id,
-        lecturer: lecturer._id,
-        schedule: theNextSchedule[0],
-      };
-      const attendance = new Attendance(incoming);
-      const [saved, savedErr] = await handlePromise(attendance.save());
-      if (saved) {
-        const [savedCodes, savedCodesErr] = await handlePromise(
-          Code.insertMany(allCodes)
-        );
-        if (savedCodes) {
-          createSuccess(
-            res,
-            { uniqueCodes: savedCodes },
-            "Attendance generated"
-          );
+  if (numOfCodes <= 2000) {
+    const generatedCodes = generateUniqueCodes(numOfCodes);
+    const [course, courseErr] = await handlePromise(
+      Course.findById(courseId).populate("schedules")
+    );
+    if (course) {
+      const allDays = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
+      const todaysDate = new Date();
+      const todaysDay = allDays[todaysDate.getDay()];
+      const scheduleDays = course.schedules.map((schedule, index) => {
+        return allDays.indexOf(schedule.day);
+      });
+      const sortSchedule = scheduleDays.sort((a, b) => a - b);
+      let nextDay;
+      for (let x = 0; x < sortSchedule.length; x++) {
+        if (todaysDay < sortSchedule[x]) {
+          nextDay = sortSchedule[x];
+          break;
         } else {
-          serverError(
-            res,
-            savedCodesErr,
-            "Your unique codes could not be saved but attendance was created"
+          nextDay = sortSchedule[0];
+        }
+      }
+
+      const nextDayName = allDays[nextDay];
+      const theNextSchedule = course.schedules.filter((schedule) => {
+        return nextDayName === schedule.day;
+      });
+
+      if (theNextSchedule[0]) {
+        const incoming = {
+          numOfCodes,
+          course: course._id,
+          lecturer: lecturer._id,
+          schedule: theNextSchedule[0],
+        };
+        const attendance = new Attendance(incoming);
+        const [saved, savedErr] = await handlePromise(attendance.save());
+        if (saved) {
+          const allCodes = generatedCodes.map((code) => ({
+            code: code,
+            attendance: saved._id,
+            used: false,
+          }));
+          const [savedCodes, savedCodesErr] = await handlePromise(
+            Code.insertMany(allCodes)
           );
+          if (savedCodes) {
+            createSuccess(
+              res,
+              { uniqueCodes: savedCodes },
+              "Attendance generated"
+            );
+          } else {
+            serverError(
+              res,
+              savedCodesErr,
+              "Your unique codes could not be saved but attendance was created"
+            );
+          }
+        } else {
+          serverError(res, null, "Could not save attendance");
         }
       } else {
-        serverError(res, null, "Could not save attendance");
+        reqError(
+          res,
+          null,
+          "Please create a schedule before adding attendance"
+        );
       }
     } else {
-      reqError(res, null, "Please create a schedule before adding attendance");
+      serverError(res, courseErr, "Could not fetch the course");
     }
   } else {
-    serverError(res, courseErr, "Could not fetch the course");
+    reqError(res, null, "Number of code is too large");
   }
 };
 

@@ -1,5 +1,6 @@
 const express = require("express");
 const attendanceController = require("../controllers/course/attendance.controller");
+const codesController = require("../controllers/course/codes.controller");
 const {
   requireLecturer,
   requireAuth,
@@ -8,6 +9,40 @@ const {
 
 const attendanceRoute = express.Router();
 
+/**
+ * @swagger
+ * /attendance/codes/{attendanceId}:
+ *  get:
+ *      summary: Fetch all codes by attendance
+ *      tags:
+ *          - attendance
+ *      parameters:
+ *          -   in: params
+ *              name: attendanceId
+ *              required: true
+ *              schema:
+ *                  type: string
+ *              description: id of the attendance to be marked
+ *      responses:
+ *          200:
+ *              description: Codes fetched successfully
+ *          400:
+ *              description: Bad request format
+ *          401:
+ *              description: Authentication failed
+ *          403:
+ *              description: Forbidden error (most likely due to authentication mismatch)
+ *          404:
+ *              description: Not found
+ *          500:
+ *              description: An operation failed.
+ */
+
+attendanceRoute.get(
+  "/codes/:attendanceId",
+  requireAuth,
+  codesController.fetch_codes_for_attendance
+);
 /**
  * @swagger
  * /attendance/mark/{attendanceId}:
@@ -190,7 +225,7 @@ attendanceRoute.get(
  *              description: custom date. should be of date iso string. TO do it you can creat a new date and do .toISOString()
  *      responses:
  *          200:
- *              description: Barcode id created successfully
+ *              description: Attendance and codes created successfully
  *          400:
  *              description: Bad request format
  *          401:
