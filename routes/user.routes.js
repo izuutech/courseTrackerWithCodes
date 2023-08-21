@@ -32,6 +32,30 @@ userRoute.get("/", requireAuth, userController.fetch_user);
 
 /**
  * @swagger
+ * /user/all:
+ *  get:
+ *      summary: Fetch all users
+ *      tags:
+ *          - user
+ *      responses:
+ *          200:
+ *              description: Users fetched  successfully
+ *          400:
+ *              description: Bad request format
+ *          401:
+ *              description: Authentication failed
+ *          403:
+ *              description: Forbidden error (most likely due to authentication mismatch)
+ *          404:
+ *              description: Not found
+ *          500:
+ *              description: An operation failed.
+ */
+
+userRoute.get("/all", userController.fetch_all_users);
+
+/**
+ * @swagger
  * /user:
  *  put:
  *      summary: Change  user password

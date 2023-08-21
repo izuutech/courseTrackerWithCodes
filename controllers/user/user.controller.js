@@ -110,4 +110,14 @@ const fetch_user = async (req, res) => {
   successReq(res, user, "User fetched");
 };
 
-module.exports = { change_password, modify_user, fetch_user };
+const fetch_all_users = async (req, res) => {
+  const user = res.locals.user;
+  const [users, usersErr] = await handlePromise(User.find({}));
+  if (users) {
+    successReq(res, users, "Users fetched");
+  } else {
+    reqError(res, null, "Could not fetch users");
+  }
+};
+
+module.exports = { change_password, modify_user, fetch_user, fetch_all_users };
